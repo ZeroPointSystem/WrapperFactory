@@ -16,21 +16,13 @@ public final class Pointcut {
     private final boolean isRequireParameterTypeNamesCheck;
 
     public Pointcut(String returnTypeName, String targetTypeName, String methodName, String[] parameterTypeNames) {
-
         this.returnTypeName = returnTypeName;
-
         isRequireReturnTypeCheck = !returnTypeName.equals("*");
-
         this.targetTypeName = targetTypeName;
-
         isRequireTargetTypeCheck = !targetTypeName.equals("*");
-
         this.methodName = methodName;
-
         isRequireMethodNameCheck = !methodName.equals("*");
-
         this.parameterTypeNames = parameterTypeNames;
-
         int parameterTypeNamesLength = parameterTypeNames.length;
 
         if (parameterTypeNamesLength == 1) {
@@ -42,48 +34,48 @@ public final class Pointcut {
 
     public boolean check(Method method) {
 
-        boolean success = true;
+        boolean isSuccess = true;
 
-        if (isRequireReturnTypeCheck) {
-            success = method
-                    .getReturnType()
-                    .getTypeName()
-                    .equals(returnTypeName);
-        }
-
-        if (success && isRequireTargetTypeCheck) {
-            success = method
-                    .getDeclaringClass()
-                    .getTypeName()
-                    .equals(targetTypeName);
-        }
-
-        if (success && isRequireMethodNameCheck) {
-            success = method
+        if (isRequireMethodNameCheck) {
+            isSuccess = method
                     .getName()
                     .equals(methodName);
         }
 
-        if (success && isRequireParameterTypeNamesCheck) {
+        if (isSuccess && isRequireReturnTypeCheck) {
+            isSuccess = method
+                    .getReturnType()
+                    .getCanonicalName()
+                    .equals(returnTypeName);
+        }
+
+        if (isSuccess && isRequireTargetTypeCheck) {
+            isSuccess = method
+                    .getDeclaringClass()
+                    .getCanonicalName()
+                    .equals(targetTypeName);
+        }
+
+        if (isSuccess && isRequireParameterTypeNamesCheck) {
 
             int parameterTypeNameLength = parameterTypeNames.length;
 
             if (parameterTypeNameLength == method.getParameterCount()) {
 
-                String[] methodParameterTypeNames = Arrays.stream(method.getParameterTypes()).map(Class::getTypeName).toArray(String[]::new);
+                Class<?>[] methodParameterTypes = method.getParameterTypes();
 
                 for (int i = 0; i < parameterTypeNameLength; i++) {
-                    if (success) {
+                    if (isSuccess) {
                         String parameterTypeName = parameterTypeNames[i];
-                        success = parameterTypeName.equals("*") || parameterTypeName.equals(methodParameterTypeNames[i]);
+                        isSuccess = parameterTypeName.equals("*") || parameterTypeName.equals(methodParameterTypes[i].getCanonicalName());
                     } else
                         break;
                 }
             } else
-                success = false;
+                isSuccess = false;
         }
 
-        return success;
+        return isSuccess;
     }
 
     @Override

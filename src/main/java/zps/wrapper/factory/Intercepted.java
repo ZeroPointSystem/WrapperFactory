@@ -4,6 +4,6 @@ import java.lang.reflect.Method;
 
 public interface Intercepted {
     Object[] getArgs();
-    Method interceptedMethod();
+    Method getMethod();
     Object proceed(Object...args) throws Throwable;
 }

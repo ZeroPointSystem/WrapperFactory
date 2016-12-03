@@ -3,7 +3,6 @@ package zps.wrapper.factory;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.InvocationHandler;
 import zps.wrapper.factory.pointcut.Pointcut;
-import zps.wrapper.factory.pointcut.expression.parser.PointcutExpressionParser;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -14,13 +13,18 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class WrapperFactory {
+public final class WrapperFactory {
 
-    private WrapperFactory() {}
+    private final Advice advice;
+    private final Pointcut pointcut;
+
+    public WrapperFactory(Advice advice, Pointcut pointcut) {
+        this.advice = advice;
+        this.pointcut = pointcut;
+    }
 
     @SuppressWarnings("unchecked")
-    public static <T> T wrap(T target, Advice advice, String pointcutExpression) {
-        Pointcut pointcut = PointcutExpressionParser.parse(pointcutExpression);
+    public <T> T wrap(T target) {
         return ((T) Enhancer.create(target.getClass(), target.getClass().getInterfaces(), prepareHandler(target, advice, pointcut)));
     }
 
@@ -70,7 +74,7 @@ public class WrapperFactory {
             }
 
             @Override
-            public Method interceptedMethod() {
+            public Method getMethod() {
                 return reflection;
             }
 
